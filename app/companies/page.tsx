@@ -60,6 +60,8 @@ const CompaniesPage = () => {
   const [isBusinessTypeDialogOpen, setIsBusinessTypeDialogOpen] =
     useState(false);
   const [isReachMethodDialogOpen, setIsReachMethodDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
@@ -185,6 +187,34 @@ const CompaniesPage = () => {
       setReachMethods([...reachMethods, data[0].name]);
       setNewReachMethod("");
       setIsReachMethodDialogOpen(false);
+    }
+  };
+
+  const handleEdit = (company: Company) => {
+    setEditingCompany(company);
+    setIsEditDialogOpen(true);
+  };
+
+  const updateCompany = async () => {
+    if (!editingCompany) return;
+
+    const { error } = await supabase
+      .from("companies")
+      .update({
+        name: editingCompany.name,
+        contact: editingCompany.contact,
+        communication_channel: editingCompany.communication_channel,
+        business_type: editingCompany.business_type,
+        reach_method: editingCompany.reach_method,
+      })
+      .eq("id", editingCompany.id);
+
+    if (error) {
+      console.error("会社情報の更新中にエラーが発生しました:", error);
+    } else {
+      fetchCompanies();
+      setIsEditDialogOpen(false);
+      setEditingCompany(null);
     }
   };
 
@@ -351,14 +381,125 @@ const CompaniesPage = () => {
               <TableCell>{company.business_type}</TableCell>
               <TableCell>{company.reach_method}</TableCell>
               <TableCell>
-                <Link href={`/companies/${company.id}`} passHref>
-                  <Button variant="outline">View</Button>
-                </Link>
+                <div className="flex gap-2">
+                  <Link href={`/companies/${company.id}`} passHref>
+                    <Button variant="outline">詳細</Button>
+                  </Link>
+                  <Button variant="outline" onClick={() => handleEdit(company)}>
+                    編集
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>会社情報を編集</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Input
+                placeholder="会社名"
+                value={editingCompany?.name || ""}
+                onChange={(e) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, name: e.target.value }
+                      : null
+                  )
+                }
+              />
+              <Input
+                placeholder="連絡先"
+                value={editingCompany?.contact || ""}
+                onChange={(e) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, contact: e.target.value }
+                      : null
+                  )
+                }
+              />
+              <Select
+                value={editingCompany?.communication_channel || ""}
+                onValueChange={(value) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, communication_channel: value }
+                      : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="コミュニケーションチャンネル" />
+                </SelectTrigger>
+                <SelectContent>
+                  {communicationChannels.map((channel) => (
+                    <SelectItem key={channel} value={channel}>
+                      {channel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={editingCompany?.business_type || ""}
+                onValueChange={(value) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, business_type: value }
+                      : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="業種" />
+                </SelectTrigger>
+                <SelectContent>
+                  {businessTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={editingCompany?.reach_method || ""}
+                onValueChange={(value) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, reach_method: value }
+                      : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="アプローチ方法" />
+                </SelectTrigger>
+                <SelectContent>
+                  {reachMethods.map((method) => (
+                    <SelectItem key={method} value={method}>
+                      {method}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={updateCompany}>更新</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
