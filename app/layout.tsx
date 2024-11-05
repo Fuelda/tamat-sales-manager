@@ -1,19 +1,19 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import Link from 'next/link'
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import Link from "next/link";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Sales Lead Management',
-  description: 'Manage your sales leads and track your business growth',
-}
+  title: "Sales Lead Management",
+  description: "Manage your sales leads and track your business growth",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -24,11 +24,6 @@ export default function RootLayout({
               Sales Lead Management
             </Link>
             <ul className="flex space-x-4">
-              <li>
-                <Link href="/dashboard" className="hover:text-gray-300">
-                  Dashboard
-                </Link>
-              </li>
               <li>
                 <Link href="/companies" className="hover:text-gray-300">
                   Companies
@@ -50,5 +45,5 @@ export default function RootLayout({
         <main className="container mx-auto mt-8">{children}</main>
       </body>
     </html>
-  )
+  );
 }

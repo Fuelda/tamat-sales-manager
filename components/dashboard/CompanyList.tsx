@@ -5,8 +5,8 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import { CompanyChart, ContactChart, ProjectChart } from "../DashboardCharts";
 import { useEffect, useState } from "react";
+import { CompanyChart, ContactChart, ProjectChart } from "./DashboardCharts";
 
 type Company = {
   id: string;
@@ -113,7 +113,9 @@ export function CompanyList({
             <Button asChild>
               <Link href="/companies">詳細を見る</Link>
             </Button>
-            <CompanyChart companies={companies} contacts={contacts} />
+            <div className="mt-4">
+              <CompanyChart companies={companies} contacts={contacts} />
+            </div>
           </CardContent>
         </Card>
 
@@ -142,7 +144,9 @@ export function CompanyList({
             <Button asChild>
               <Link href="/contacts">詳細を見る</Link>
             </Button>
-            <ContactChart contacts={contacts} />
+            <div className="mt-4">
+              <ContactChart contacts={contacts} />
+            </div>
           </CardContent>
         </Card>
 
@@ -171,7 +175,9 @@ export function CompanyList({
             <Button asChild>
               <Link href="/projects">詳細を見る</Link>
             </Button>
-            <ProjectChart projects={projects} />
+            <div className="mt-4">
+              <ProjectChart projects={projects} />
+            </div>
           </CardContent>
         </Card>
       </div>
