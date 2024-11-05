@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import CompanyDetails from "./CompanyDetails";
 
+export const dynamic = "force-dynamic";
+
 async function getCompanyData(id: string) {
   const { data: company, error: companyError } = await supabase
     .from("companies")

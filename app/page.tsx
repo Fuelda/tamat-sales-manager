@@ -1,6 +1,8 @@
 import { CompanyList } from "@/components/dashboard/CompanyList";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function Dashboard() {
   const { data: companies } = await supabase.from("companies").select("*");
   const { data: contacts } = await supabase

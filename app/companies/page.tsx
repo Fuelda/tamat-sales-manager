@@ -37,6 +37,8 @@ interface Company {
   reach_method: string;
 }
 
+export const dynamic = "force-dynamic";
+
 const CompaniesPage = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [newCompany, setNewCompany] = useState<Omit<Company, "id">>({

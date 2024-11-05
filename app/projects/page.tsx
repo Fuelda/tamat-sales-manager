@@ -40,6 +40,8 @@ const PROJECT_STATUSES = [
   "キャンセル",
 ] as const;
 
+export const dynamic = "force-dynamic";
+
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProject, setNewProject] = useState({

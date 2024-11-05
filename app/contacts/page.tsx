@@ -47,6 +47,7 @@ interface Company {
   name: string;
 }
 
+export const dynamic = "force-dynamic";
 const ContactsPage = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
