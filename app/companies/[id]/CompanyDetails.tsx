@@ -114,7 +114,9 @@ export default function CompanyDetails({
                   <TableCell>
                     {new Date(history.contact_date).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>{history.content}</TableCell>
+                  <TableCell className="whitespace-pre-wrap">
+                    {history.content}
+                  </TableCell>
                   <TableCell>
                     <Badge>{history.status}</Badge>
                   </TableCell>
@@ -124,7 +126,6 @@ export default function CompanyDetails({
           </Table>
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>案件</CardTitle>

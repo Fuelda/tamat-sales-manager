@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 // ステータスの選択肢を定義
 const leadStatuses = [
@@ -72,7 +73,7 @@ const ContactsPage = () => {
         `
         id,
         company_id,
-        companies (name),
+        companies (id, name),
         contact_date,
         content,
         status
@@ -87,6 +88,7 @@ const ContactsPage = () => {
         data.map((contact: any) => ({
           ...contact,
           company_name: contact.companies.name,
+          company_id: contact.companies.id,
         }))
       );
     }
@@ -198,7 +200,15 @@ const ContactsPage = () => {
         <TableBody>
           {contacts.map((contact) => (
             <TableRow key={contact.id}>
-              <TableCell>{contact.company_name}</TableCell>
+              <TableCell>
+                {" "}
+                <Link
+                  href={`/companies/${contact.company_id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {contact.company_name}
+                </Link>
+              </TableCell>
               <TableCell>
                 {new Date(contact.contact_date).toLocaleDateString("ja-JP")}
               </TableCell>
