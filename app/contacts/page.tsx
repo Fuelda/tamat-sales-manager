@@ -39,7 +39,12 @@ interface Contact {
   company_name: string;
   contact_date: string;
   content: string;
-  status: string; // 新しく追加
+  status: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
 }
 
 const ContactsPage = () => {
@@ -78,7 +83,7 @@ const ContactsPage = () => {
       console.error("コンタクトデータの取得中にエラーが発生しました:", error);
     } else {
       setContacts(
-        data.map((contact) => ({
+        data.map((contact: any) => ({
           ...contact,
           company_name: contact.companies.name,
         }))

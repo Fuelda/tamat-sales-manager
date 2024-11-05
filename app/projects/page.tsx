@@ -1,49 +1,89 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import Link from "next/link";
+
+interface Project {
+  billing_date: string;
+  companies: { id: string; name: string };
+  company_id: string;
+  created_at: Date;
+  id: string;
+  payment_date: string;
+  price: number;
+  status: string;
+  updated_at: Date;
+}
+
+interface Company {
+  id: string;
+  name: string;
+}
 
 export default function Projects() {
-  const [projects, setProjects] = useState([])
-  const [newProject, setNewProject] = useState({ company_id: '', price: '', billing_date: '', payment_date: '', status: '' })
-  const [companies, setCompanies] = useState([])
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [newProject, setNewProject] = useState({
+    company_id: "",
+    price: "",
+    billing_date: "",
+    payment_date: "",
+    status: "",
+  });
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   useEffect(() => {
-    fetchProjects()
-    fetchCompanies()
-  }, [])
+    fetchProjects();
+    fetchCompanies();
+  }, []);
 
   async function fetchProjects() {
     const { data, error } = await supabase
-      .from('projects')
-      .select(`
+      .from("projects")
+      .select(
+        `
         *,
         companies (
           id,
           name
         )
-      `)
-      .order('billing_date', { ascending: false })
-    if (error) console.error('Error fetching projects:', error)
-    else setProjects(data)
+      `
+      )
+      .order("billing_date", { ascending: false });
+    if (error) console.error("Error fetching projects:", error);
+    else setProjects(data as Project[]);
   }
 
   async function fetchCompanies() {
-    const { data, error } = await supabase.from('companies').select('id, name')
-    if (error) console.error('Error fetching companies:', error)
-    else setCompanies(data)
+    const { data, error } = await supabase.from("companies").select("id, name");
+    if (error) console.error("Error fetching companies:", error);
+    else setCompanies(data as Company[]);
   }
 
   async function addProject() {
-    const { data, error } = await supabase.from('projects').insert([newProject])
-    if (error) console.error('Error adding project:', error)
+    const { data, error } = await supabase
+      .from("projects")
+      .insert([newProject]);
+    if (error) console.error("Error adding project:", error);
     else {
-      fetchProjects()
-      setNewProject({ company_id: '', price: '', billing_date: '', payment_date: '', status: '' })
+      fetchProjects();
+      setNewProject({
+        company_id: "",
+        price: "",
+        billing_date: "",
+        payment_date: "",
+        status: "",
+      });
     }
   }
 
@@ -56,35 +96,47 @@ export default function Projects() {
           <select
             className="border p-2 rounded"
             value={newProject.company_id}
-            onChange={(e) => setNewProject({ ...newProject, company_id: e.target.value })}
+            onChange={(e) =>
+              setNewProject({ ...newProject, company_id: e.target.value })
+            }
           >
             <option value="">Select Company</option>
             {companies.map((company) => (
-              <option key={company.id} value={company.id}>{company.name}</option>
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
             ))}
           </select>
           <Input
             type="number"
             placeholder="Price"
             value={newProject.price}
-            onChange={(e) => setNewProject({ ...newProject, price: e.target.value })}
+            onChange={(e) =>
+              setNewProject({ ...newProject, price: e.target.value })
+            }
           />
           <Input
             type="date"
             placeholder="Billing Date"
             value={newProject.billing_date}
-            onChange={(e) => setNewProject({ ...newProject, billing_date: e.target.value })}
+            onChange={(e) =>
+              setNewProject({ ...newProject, billing_date: e.target.value })
+            }
           />
           <Input
             type="date"
             placeholder="Payment Date"
             value={newProject.payment_date}
-            onChange={(e) => setNewProject({ ...newProject, payment_date: e.target.value })}
+            onChange={(e) =>
+              setNewProject({ ...newProject, payment_date: e.target.value })
+            }
           />
           <Input
             placeholder="Status"
             value={newProject.status}
-            onChange={(e) => setNewProject({ ...newProject, status: e.target.value })}
+            onChange={(e) =>
+              setNewProject({ ...newProject, status: e.target.value })
+            }
           />
           <Button onClick={addProject}>Add Project</Button>
         </div>
@@ -104,17 +156,25 @@ export default function Projects() {
             <TableRow key={project.id}>
               <TableCell>
                 <Link href={`/companies/${project.company_id}`}>
-                  <span className="text-blue-600 hover:underline">{project.companies.name}</span>
+                  <span className="text-blue-600 hover:underline">
+                    {project.companies.name}
+                  </span>
                 </Link>
               </TableCell>
               <TableCell>¥{project.price.toLocaleString()}</TableCell>
-              <TableCell>{new Date(project.billing_date).toLocaleDateString()}</TableCell>
-              <TableCell>{project.payment_date ? new Date(project.payment_date).toLocaleDateString() : 'Not paid'}</TableCell>
+              <TableCell>
+                {new Date(project.billing_date).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                {project.payment_date
+                  ? new Date(project.payment_date).toLocaleDateString()
+                  : "Not paid"}
+              </TableCell>
               <TableCell>{project.status}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
