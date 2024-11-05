@@ -56,7 +56,7 @@ export function CompanyList({
           <CardHeader>
             <CardTitle className="text-red-500 flex items-center">
               <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
-              注意：最近コンタクトがない会社
+              最近コンタクトがない会社
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -81,9 +81,6 @@ export function CompanyList({
                       {company.latestContact.content.substring(0, 100)}...
                     </p>
                   )}
-                  <Button asChild className="mt-2" variant="outline" size="sm">
-                    <Link href={`/companies/${company.id}`}>詳細を見る</Link>
-                  </Button>
                 </li>
               ))}
             </ul>

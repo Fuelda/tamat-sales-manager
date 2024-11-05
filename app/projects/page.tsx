@@ -31,6 +31,15 @@ interface Company {
   name: string;
 }
 
+const PROJECT_STATUSES = [
+  "調整中",
+  "見積済",
+  "請求済",
+  "納品済",
+  "入金済",
+  "キャンセル",
+] as const;
+
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProject, setNewProject] = useState({
@@ -131,13 +140,20 @@ export default function Projects() {
               setNewProject({ ...newProject, payment_date: e.target.value })
             }
           />
-          <Input
-            placeholder="Status"
+          <select
+            className="border p-2 rounded"
             value={newProject.status}
             onChange={(e) =>
               setNewProject({ ...newProject, status: e.target.value })
             }
-          />
+          >
+            <option value="">ステータスを選択</option>
+            {PROJECT_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
           <Button onClick={addProject}>Add Project</Button>
         </div>
       </div>
