@@ -35,6 +35,7 @@ interface Company {
   communication_channel: string;
   business_type: string;
   reach_method: string;
+  last_contact_date: string | null;
 }
 
 export const dynamic = "force-dynamic";
@@ -71,10 +72,55 @@ const CompaniesPage = () => {
   }, []);
 
   const fetchCompanies = async () => {
-    const { data, error } = await supabase.from("companies").select("*");
-    if (error)
-      console.error("会社データの取得中にエラーが発生しました:", error);
-    else setCompanies(data as Company[]);
+    const { data: companiesData, error: companiesError } = await supabase
+      .from("companies")
+      .select("*");
+
+    if (companiesError) {
+      console.error(
+        "会社データの取得中にエラーが発生しました:",
+        companiesError
+      );
+      return;
+    }
+
+    const { data: contacts, error: contactsError } = await supabase
+      .from("contact_history")
+      .select("*");
+
+    if (contactsError) {
+      console.error(
+        "コンタクト履歴の取得中にエラーが発生しました:",
+        contactsError
+      );
+      return;
+    }
+
+    const companiesWithLastContact = companiesData.map((company) => {
+      const companyContacts = contacts
+        ?.filter((contact) => contact.company_id === company.id)
+        .sort(
+          (a, b) =>
+            new Date(b.contact_date).getTime() -
+            new Date(a.contact_date).getTime()
+        );
+
+      return {
+        ...company,
+        last_contact_date: companyContacts?.[0]?.contact_date || null,
+      };
+    });
+
+    const sortedCompanies = companiesWithLastContact.sort((a, b) => {
+      if (!a.last_contact_date) return 1;
+      if (!b.last_contact_date) return -1;
+      return (
+        new Date(b.last_contact_date).getTime() -
+        new Date(a.last_contact_date).getTime()
+      );
+    });
+
+    setCompanies(sortedCompanies);
   };
 
   const fetchCommunicationChannels = async () => {
@@ -364,12 +410,13 @@ const CompaniesPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Communication Channel</TableHead>
-            <TableHead>Business Type</TableHead>
-            <TableHead>Reach Method</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>会社名</TableHead>
+            <TableHead>連絡先</TableHead>
+            <TableHead>コミュニケーションチャンネル</TableHead>
+            <TableHead>業種</TableHead>
+            <TableHead>アプローチ方法</TableHead>
+            <TableHead>最終コンタクト日</TableHead>
+            <TableHead>アクション</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -380,6 +427,13 @@ const CompaniesPage = () => {
               <TableCell>{company.communication_channel}</TableCell>
               <TableCell>{company.business_type}</TableCell>
               <TableCell>{company.reach_method}</TableCell>
+              <TableCell>
+                {company.last_contact_date
+                  ? new Date(company.last_contact_date).toLocaleDateString(
+                      "ja-JP"
+                    )
+                  : "-"}
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Link href={`/companies/${company.id}`} passHref>
