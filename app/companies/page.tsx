@@ -35,20 +35,20 @@ interface Company {
   communication_channel: string;
   business_type: string;
   reach_method: string;
-  last_contact_date: string | null;
 }
 
 export const dynamic = "force-dynamic";
 
 const CompaniesPage = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<
+    (Company & { last_contact_date: string | null })[]
+  >([]);
   const [newCompany, setNewCompany] = useState<Omit<Company, "id">>({
     name: "",
     contact: "",
     communication_channel: "",
     business_type: "",
     reach_method: "",
-    last_contact_date: null,
   });
   const [communicationChannels, setCommunicationChannels] = useState<string[]>(
     []
@@ -179,7 +179,6 @@ const CompaniesPage = () => {
         communication_channel: "",
         business_type: "",
         reach_method: "",
-        last_contact_date: null,
       });
     }
   };
