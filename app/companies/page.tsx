@@ -48,6 +48,7 @@ const CompaniesPage = () => {
     communication_channel: "",
     business_type: "",
     reach_method: "",
+    last_contact_date: null,
   });
   const [communicationChannels, setCommunicationChannels] = useState<string[]>(
     []
@@ -178,6 +179,7 @@ const CompaniesPage = () => {
         communication_channel: "",
         business_type: "",
         reach_method: "",
+        last_contact_date: null,
       });
     }
   };
