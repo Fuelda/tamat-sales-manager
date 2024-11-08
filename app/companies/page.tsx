@@ -33,8 +33,13 @@ interface Company {
   name: string;
   contact: string;
   communication_channel: string;
-  business_type: string;
+  business_type_id: string;
   reach_method: string;
+}
+
+interface BusinessType {
+  id: string;
+  name: string;
 }
 
 export const dynamic = "force-dynamic";
@@ -47,13 +52,13 @@ const CompaniesPage = () => {
     name: "",
     contact: "",
     communication_channel: "",
-    business_type: "",
+    business_type_id: "",
     reach_method: "",
   });
   const [communicationChannels, setCommunicationChannels] = useState<string[]>(
     []
   );
-  const [businessTypes, setBusinessTypes] = useState<string[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [reachMethods, setReachMethods] = useState<string[]>([]);
   const [newChannel, setNewChannel] = useState("");
   const [newBusinessType, setNewBusinessType] = useState("");
@@ -143,13 +148,13 @@ const CompaniesPage = () => {
   const fetchBusinessTypes = async () => {
     const { data, error } = await supabase
       .from("business_types")
-      .select("name")
+      .select("id, name")
       .order("name");
 
     if (error) {
       console.error("業種の取得中にエラーが発生しました:", error);
     } else {
-      setBusinessTypes(data.map((type) => type.name));
+      setBusinessTypes(data);
     }
   };
 
@@ -167,9 +172,12 @@ const CompaniesPage = () => {
   };
 
   const addCompany = async () => {
-    const { data, error } = await supabase
-      .from("companies")
-      .insert([newCompany]);
+    const { data, error } = await supabase.from("companies").insert([
+      {
+        ...newCompany,
+        business_type_id: newCompany.business_type_id,
+      },
+    ]);
     if (error) console.error("会社の追加中にエラーが発生しました:", error);
     else {
       fetchCompanies();
@@ -177,7 +185,7 @@ const CompaniesPage = () => {
         name: "",
         contact: "",
         communication_channel: "",
-        business_type: "",
+        business_type_id: "",
         reach_method: "",
       });
     }
@@ -251,7 +259,7 @@ const CompaniesPage = () => {
         name: editingCompany.name,
         contact: editingCompany.contact,
         communication_channel: editingCompany.communication_channel,
-        business_type: editingCompany.business_type,
+        business_type_id: editingCompany.business_type_id,
         reach_method: editingCompany.reach_method,
       })
       .eq("id", editingCompany.id);
@@ -327,9 +335,9 @@ const CompaniesPage = () => {
           </div>
           <div className="flex gap-2">
             <Select
-              value={newCompany.business_type}
+              value={newCompany.business_type_id}
               onValueChange={(value) =>
-                setNewCompany({ ...newCompany, business_type: value })
+                setNewCompany({ ...newCompany, business_type_id: value })
               }
             >
               <SelectTrigger className="flex-grow">
@@ -337,8 +345,8 @@ const CompaniesPage = () => {
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -426,7 +434,11 @@ const CompaniesPage = () => {
               <TableCell>{company.name}</TableCell>
               <TableCell>{company.contact}</TableCell>
               <TableCell>{company.communication_channel}</TableCell>
-              <TableCell>{company.business_type}</TableCell>
+              <TableCell>
+                {businessTypes.find(
+                  (type) => type.id === company.business_type_id
+                )?.name || "-"}
+              </TableCell>
               <TableCell>{company.reach_method}</TableCell>
               <TableCell>
                 {company.last_contact_date
@@ -501,11 +513,11 @@ const CompaniesPage = () => {
                 </SelectContent>
               </Select>
               <Select
-                value={editingCompany?.business_type || ""}
+                value={editingCompany?.business_type_id || ""}
                 onValueChange={(value) =>
                   setEditingCompany(
                     editingCompany
-                      ? { ...editingCompany, business_type: value }
+                      ? { ...editingCompany, business_type_id: value }
                       : null
                   )
                 }
@@ -515,8 +527,8 @@ const CompaniesPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {businessTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
