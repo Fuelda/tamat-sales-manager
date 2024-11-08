@@ -1,0 +1,70 @@
+.content-style {
+  max-width: none;
+}
+
+.content-style h1,
+.content-style h2,
+.content-style h3,
+.content-style h4 {
+  font-weight: bold;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.content-style h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  margin-bottom: 1rem;
+}
+
+.content-style h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.content-style p {
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.content-style ul,
+.content-style ol {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.content-style ul {
+  list-style-type: disc;
+}
+
+.content-style ol {
+  list-style-type: decimal;
+}
+
+.content-style li {
+  margin: 0.5rem 0;
+}
+
+.content-style a {
+  text-decoration: underline;
+}
+
+.content-style blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1.5rem 0;
+}
+
+.content-style img {
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .content-style blockquote {
+    border-left-color: #4b5563;
+  }
+}
