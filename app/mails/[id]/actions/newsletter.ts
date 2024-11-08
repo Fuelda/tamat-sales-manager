@@ -1,36 +1,56 @@
 "use server";
 
+import { resend } from "@/lib/resend";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
-export async function sendNewsletter(mailId: string, categoryId: number) {
+interface SendNewsletterParams {
+  mailId: string;
+  categoryIds: number[];
+  title: string;
+  contents: string;
+}
+
+export async function sendNewsletter({
+  mailId,
+  categoryIds,
+  title,
+  contents,
+}: SendNewsletterParams) {
   try {
     // 選択されたカテゴリーに属する企業を取得
     const { data: targetCompanies, error: fetchError } = await supabase
       .from("companies")
-      .select("*")
-      .eq("business_type_id", categoryId);
+      .select("name, contact, communication_channel")
+      .in("business_type_id", categoryIds);
 
     if (fetchError) throw fetchError;
 
-    const targetCompaniesContact = targetCompanies.map((company) => ({
-      name: company.name,
-      contact: company.contact,
-      communicationChannel: company.communication_channel,
-    }));
-    const targetMailCompaniesContact = targetCompaniesContact.filter(
-      (company) => company.communicationChannel === "mail"
+    const targetMailCompanies = targetCompanies.filter(
+      (company) => company.communication_channel === "mail"
     );
-    // 対象企業のリストをログ出力
-    console.log(targetMailCompaniesContact);
+    const targetCompaniesMail = targetMailCompanies.map(
+      (company) => company.contact
+    );
 
-    // Supabaseに送信記録を保存
-    // const { error } = await supabase.from("sent_newsletters").insert({
-    //   mail_id: mailId,
-    //   category_id: categoryId,
+    console.log(targetCompaniesMail);
+
+    // const { data: sentData, error: sendError } = await resend.emails.send({
+    //   from: "masuda@tamat.jp",
+    //   to: targetCompaniesMail,
+    //   subject: title,
+    //   html: contents,
     // });
+    // if (sendError) throw sendError;
 
-    // if (error) throw error;
+    // // Supabaseに送信記録を保存
+    // const { error: insertError } = await supabase
+    //   .from("sent_newsletters")
+    //   .insert({
+    //     mail_id: mailId,
+    //     category_id: categoryId,
+    //   });
+    // if (insertError) throw insertError;
 
     // キャッシュの再検証
     revalidatePath("/mails", "layout");

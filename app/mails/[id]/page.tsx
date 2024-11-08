@@ -124,7 +124,11 @@ export default async function NewsletterDetail({
           </div>
         </CardHeader>
         <CardContent>
-          <NewsletterForm mailId={mail.id} />
+          <NewsletterForm
+            mailId={mail.id}
+            title={mail.title}
+            contents={mail.contents[0].contents}
+          />
         </CardContent>
       </Card>
 

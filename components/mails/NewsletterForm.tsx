@@ -1,17 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Send } from "lucide-react";
 import { useState, useEffect } from "react";
 import { sendNewsletter } from "../../app/mails/[id]/actions/newsletter";
 import { supabase } from "@/lib/supabase";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BusinessType {
   id: number;
@@ -20,11 +14,18 @@ interface BusinessType {
 
 interface NewsletterFormProps {
   mailId: string;
+  title: string;
+  contents: string;
 }
 
-export function NewsletterForm({ mailId }: NewsletterFormProps) {
+export function NewsletterForm({
+  mailId,
+  title,
+  contents,
+}: NewsletterFormProps) {
   const [sending, setSending] = useState(false);
   const [categories, setCategories] = useState<BusinessType[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
   useEffect(() => {
     async function fetchBusinessTypes() {
@@ -46,8 +47,12 @@ export function NewsletterForm({ mailId }: NewsletterFormProps) {
   async function handleSubmit(formData: FormData) {
     setSending(true);
     try {
-      const categoryId = parseInt(formData.get("category") as string);
-      const result = await sendNewsletter(mailId, categoryId);
+      const result = await sendNewsletter({
+        mailId,
+        categoryIds: selectedCategories,
+        title,
+        contents,
+      });
       if (!result.success) {
         throw new Error("Failed to send newsletter");
       }
@@ -63,19 +68,30 @@ export function NewsletterForm({ mailId }: NewsletterFormProps) {
   return (
     <form action={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Target Category</label>
-        <Select name="category">
-          <SelectTrigger>
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id.toString()}>
+        <label className="text-sm font-medium">対象カテゴリー</label>
+        <div className="space-y-2">
+          {categories.map((category) => (
+            <div key={category.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`category-${category.id}`}
+                checked={selectedCategories.includes(category.id)}
+                onCheckedChange={(checked) => {
+                  setSelectedCategories((prev) =>
+                    checked
+                      ? [...prev, category.id]
+                      : prev.filter((id) => id !== category.id)
+                  );
+                }}
+              />
+              <label
+                htmlFor={`category-${category.id}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
 
       <Button disabled={sending} className="w-full gap-2">
