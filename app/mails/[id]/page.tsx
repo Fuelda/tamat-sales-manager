@@ -1,25 +1,15 @@
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, CheckCircle, MailIcon } from "lucide-react";
 import Link from "next/link";
 import { client } from "@/lib/microcms";
 import ReactMarkdown from "react-markdown";
 import { Mail, MailContent } from "../page";
-
-const categories = [
-  { id: 1, name: "Enterprise" },
-  { id: 2, name: "Small Business" },
-  { id: 3, name: "Startup" },
-  { id: 4, name: "Non-Profit" },
-];
+import { NewsletterForm } from "../../../components/mails/NewsletterForm";
+import { supabase } from "@/lib/supabase";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 // microCMSから特定のメールを取得する関数
 async function getMail(id: string) {
@@ -81,6 +71,14 @@ export default async function NewsletterDetail({
 }) {
   const mail = await getMail(params.id);
 
+  const { data: sentMail } = await supabase
+    .from("sent_newsletters")
+    .select("*")
+    .eq("mail_id", params.id)
+    .limit(1);
+
+  const isSent = sentMail && sentMail.length > 0;
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
@@ -92,42 +90,41 @@ export default async function NewsletterDetail({
         </Link>
       </div>
 
-      <Card className="mb-8">
+      <Card className={cn("mb-8", isSent && "border-l-4 border-l-green-500")}>
         <CardHeader>
-          <CardTitle>Send Newsletter</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CardTitle>Send Newsletter</CardTitle>
+              {isSent ? (
+                <div className="flex items-center text-green-600 text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  送信済み
+                </div>
+              ) : (
+                <div className="flex items-center text-yellow-600 text-sm font-medium">
+                  <MailIcon className="h-4 w-4 mr-1" />
+                  未送信
+                </div>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Target Category</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id.toString()}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button className="w-full gap-2">
-              <Send className="h-4 w-4" />
-              Send Newsletter
-            </Button>
-          </form>
+          <NewsletterForm mailId={mail.id} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>{mail.title}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{mail.title}</CardTitle>
+            {isSent && (
+              <div className="flex items-center text-green-600 text-sm font-medium">
+                <CheckCircle className="h-4 w-4 mr-1" />
+                送信済み
+              </div>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">
             {new Date(mail.publishedAt).toLocaleDateString()}
           </p>
