@@ -8,7 +8,6 @@ import ReactMarkdown from "react-markdown";
 import { Mail, MailContent } from "../page";
 import { NewsletterForm } from "../../../components/mails/NewsletterForm";
 import { supabase } from "@/lib/supabase";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // microCMSから特定のメールを取得する関数
@@ -75,9 +74,19 @@ export default async function NewsletterDetail({
     .from("sent_newsletters")
     .select("*")
     .eq("mail_id", params.id)
+    .order("sent_at", { ascending: false })
     .limit(1);
 
   const isSent = sentMail && sentMail.length > 0;
+  const sentDate = isSent
+    ? new Date(sentMail[0].sent_at).toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
   return (
     <div className="container mx-auto p-6">
@@ -96,9 +105,14 @@ export default async function NewsletterDetail({
             <div className="flex items-center gap-3">
               <CardTitle>Send Newsletter</CardTitle>
               {isSent ? (
-                <div className="flex items-center text-green-600 text-sm font-medium">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  送信済み
+                <div className="flex flex-col">
+                  <div className="flex items-center text-green-600 text-sm font-medium">
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    送信済み
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    送信日時: {sentDate}
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center text-yellow-600 text-sm font-medium">
@@ -119,14 +133,17 @@ export default async function NewsletterDetail({
           <div className="flex items-center justify-between">
             <CardTitle>{mail.title}</CardTitle>
             {isSent && (
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <CheckCircle className="h-4 w-4 mr-1" />
-                送信済み
+              <div className="flex flex-col items-end">
+                <div className="flex items-center text-green-600 text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  送信済み
+                </div>
+                <div className="text-sm text-muted-foreground">{sentDate}</div>
               </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            {new Date(mail.publishedAt).toLocaleDateString()}
+            作成日: {new Date(mail.publishedAt).toLocaleDateString()}
           </p>
         </CardHeader>
         <CardContent>

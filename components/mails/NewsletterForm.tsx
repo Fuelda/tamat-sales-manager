@@ -9,15 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Send } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sendNewsletter } from "../../app/mails/[id]/actions/newsletter";
+import { supabase } from "@/lib/supabase";
 
-const categories = [
-  { id: 1, name: "Enterprise" },
-  { id: 2, name: "Small Business" },
-  { id: 3, name: "Startup" },
-  { id: 4, name: "Non-Profit" },
-];
+interface BusinessType {
+  id: number;
+  name: string;
+}
 
 interface NewsletterFormProps {
   mailId: string;
@@ -25,6 +24,24 @@ interface NewsletterFormProps {
 
 export function NewsletterForm({ mailId }: NewsletterFormProps) {
   const [sending, setSending] = useState(false);
+  const [categories, setCategories] = useState<BusinessType[]>([]);
+
+  useEffect(() => {
+    async function fetchBusinessTypes() {
+      const { data, error } = await supabase
+        .from("business_types")
+        .select("id, name");
+
+      if (error) {
+        console.error("Error fetching business types:", error);
+        return;
+      }
+
+      setCategories(data);
+    }
+
+    fetchBusinessTypes();
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     setSending(true);
