@@ -1,5 +1,7 @@
 "use server";
 
+import { EmailTemplate } from "@/components/mails/EmailTemplate";
+import { MailContent } from "@/app/mails/page";
 import { resend } from "@/lib/resend";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
@@ -8,7 +10,7 @@ interface SendNewsletterParams {
   mailId: string;
   categoryIds: number[];
   title: string;
-  contents: string;
+  contents: MailContent[];
 }
 
 export async function sendNewsletter({
@@ -39,7 +41,7 @@ export async function sendNewsletter({
     //   from: "masuda@tamat.jp",
     //   to: targetCompaniesMail,
     //   subject: title,
-    //   html: contents,
+    //   react: EmailTemplate({ contents: contents }),
     // });
     // if (sendError) throw sendError;
 
@@ -48,7 +50,6 @@ export async function sendNewsletter({
     //   .from("sent_newsletters")
     //   .insert({
     //     mail_id: mailId,
-    //     category_id: categoryId,
     //   });
     // if (insertError) throw insertError;
 

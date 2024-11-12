@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, MailIcon } from "lucide-react";
 import Link from "next/link";
 import { client } from "@/lib/microcms";
-import ReactMarkdown from "react-markdown";
-import { Mail, MailContent } from "../page";
+import { Mail } from "../page";
 import { NewsletterForm } from "../../../components/mails/NewsletterForm";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { ContentRenderer } from "@/components/mails/EmailTemplate";
 
 // microCMSから特定のメールを取得する関数
 async function getMail(id: string) {
@@ -33,34 +33,6 @@ export async function generateStaticParams() {
   return data.contents.map((mail) => ({
     id: mail.id,
   }));
-}
-
-// コンテンツ表示用のコンポーネント
-function ContentRenderer({ content }: { content: MailContent }) {
-  switch (content.fieldId) {
-    case "rich-editor":
-      return (
-        <div
-          dangerouslySetInnerHTML={{ __html: content.contents }}
-          className="content-style"
-        />
-      );
-    case "markdown":
-      return (
-        <ReactMarkdown className="content-style">
-          {content.contents}
-        </ReactMarkdown>
-      );
-    case "html":
-      return (
-        <div
-          dangerouslySetInnerHTML={{ __html: content.contents }}
-          className="content-style"
-        />
-      );
-    default:
-      return <p>{content.contents}</p>;
-  }
 }
 
 export default async function NewsletterDetail({
@@ -127,7 +99,7 @@ export default async function NewsletterDetail({
           <NewsletterForm
             mailId={mail.id}
             title={mail.title}
-            contents={mail.contents[0].contents}
+            contents={mail.contents}
           />
         </CardContent>
       </Card>

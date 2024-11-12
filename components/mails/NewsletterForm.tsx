@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { sendNewsletter } from "../../app/mails/[id]/actions/newsletter";
 import { supabase } from "@/lib/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MailContent } from "@/app/mails/page";
 
 interface BusinessType {
   id: number;
@@ -15,7 +16,7 @@ interface BusinessType {
 interface NewsletterFormProps {
   mailId: string;
   title: string;
-  contents: string;
+  contents: MailContent[];
 }
 
 export function NewsletterForm({
