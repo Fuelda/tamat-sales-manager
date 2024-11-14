@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
-import { leadStatuses } from "@/app/contacts/page";
+import { leadStatuses } from "@/constants/leadStatuses";
 
 interface ContactModalProps {
   companyId: string;

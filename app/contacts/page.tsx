@@ -21,18 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-
-// ステータスの選択肢を定義
-export const leadStatuses = [
-  "初回接触",
-  "興味あり",
-  "提案中",
-  "交渉中",
-  "成約",
-  "失注",
-  "保留中",
-  "フォローアップ中",
-];
+import { leadStatuses } from "@/constants/leadStatuses";
 
 interface Contact {
   id: string;
