@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { BusinessType } from "../page";
 import { supabase } from "@/lib/supabase";
+import ContactModal from "./ContactModal";
 
 interface Company {
   id: string;
@@ -57,10 +58,27 @@ interface CompanyDetailsProps {
 
 export default function CompanyDetails({
   company,
-  contactHistory,
+  contactHistory: initialContactHistory,
   projects,
   businessTypes,
 }: CompanyDetailsProps) {
+  const [contactHistory, setContactHistory] = useState(initialContactHistory);
+
+  const handleContactAdded = async () => {
+    const { data, error } = await supabase
+      .from("contact_history")
+      .select("*")
+      .eq("company_id", company.id)
+      .order("contact_date", { ascending: false });
+
+    if (error) {
+      console.error("連絡履歴の再取得中にエラーが発生しました:", error);
+      return;
+    }
+
+    setContactHistory(data);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <Card>
@@ -114,8 +132,12 @@ export default function CompanyDetails({
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>連絡履歴</CardTitle>
+          <ContactModal
+            companyId={company.id}
+            onContactAdded={handleContactAdded}
+          />
         </CardHeader>
         <CardContent>
           <Table>

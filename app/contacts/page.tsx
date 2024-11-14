@@ -23,7 +23,7 @@ import {
 import Link from "next/link";
 
 // ステータスの選択肢を定義
-const leadStatuses = [
+export const leadStatuses = [
   "初回接触",
   "興味あり",
   "提案中",
