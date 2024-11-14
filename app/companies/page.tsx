@@ -37,7 +37,7 @@ interface Company {
   reach_method: string;
 }
 
-interface BusinessType {
+export interface BusinessType {
   id: string;
   name: string;
 }
@@ -432,7 +432,18 @@ const CompaniesPage = () => {
           {companies.map((company) => (
             <TableRow key={company.id}>
               <TableCell>{company.name}</TableCell>
-              <TableCell>{company.contact}</TableCell>
+              <TableCell>
+                <a
+                  href={
+                    company.communication_channel === "mail"
+                      ? `mailto:${company.contact}`
+                      : company.contact
+                  }
+                  target="_blank"
+                >
+                  {company.contact}
+                </a>
+              </TableCell>
               <TableCell>{company.communication_channel}</TableCell>
               <TableCell>
                 {businessTypes.find(

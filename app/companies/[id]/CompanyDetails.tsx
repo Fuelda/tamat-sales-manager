@@ -14,13 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BusinessType } from "../page";
+import { supabase } from "@/lib/supabase";
 
 interface Company {
   id: string;
   name: string;
   contact: string;
   communication_channel: string;
-  business_type: string;
+  business_type_id: string;
   reach_method: string;
   created_at: string;
   updated_at: string;
@@ -50,12 +52,14 @@ interface CompanyDetailsProps {
   company: Company;
   contactHistory: ContactHistory[];
   projects: Project[];
+  businessTypes: BusinessType[];
 }
 
 export default function CompanyDetails({
   company,
   contactHistory,
   projects,
+  businessTypes,
 }: CompanyDetailsProps) {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -68,13 +72,27 @@ export default function CompanyDetails({
             <div>
               <h3 className="text-lg font-semibold mb-2">会社情報</h3>
               <p>
-                <strong>連絡先:</strong> {company.contact}
+                <strong>連絡先:</strong>{" "}
+                <a
+                  href={
+                    company.communication_channel === "mail"
+                      ? `mailto:${company.contact}`
+                      : company.contact
+                  }
+                  target="_blank"
+                >
+                  {company.contact}
+                </a>
               </p>
               <p>
-                <strong>連絡媒体:</strong> {company.communication_channel}
+                <strong>連絡媒体: </strong>
+                {company.communication_channel}
               </p>
               <p>
-                <strong>事業内容:</strong> {company.business_type}
+                <strong>事業内容: </strong>
+                {businessTypes.find(
+                  (type) => type.id === company.business_type_id
+                )?.name || "-"}
               </p>
               <p>
                 <strong>リーチ手段:</strong> {company.reach_method}

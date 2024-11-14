@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import CompanyDetails from "./CompanyDetails";
+import { BusinessType } from "../page";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,16 @@ async function getCompanyData(id: string) {
     throw new Error("案件データを取得できませんでした");
   }
 
-  return { company, contactHistory, projects };
+  const { data: businessTypes, error: businessTypesError } = (await supabase
+    .from("business_types")
+    .select("id, name")
+    .order("name")) as { data: BusinessType[]; error: Error | null };
+
+  if (businessTypesError) {
+    console.error("業種の取得中にエラーが発生しました:", businessTypesError);
+  }
+
+  return { company, contactHistory, projects, businessTypes };
 }
 
 export default async function CompanyPage({
@@ -48,13 +58,15 @@ export default async function CompanyPage({
 }: {
   params: { id: string };
 }) {
-  const { company, contactHistory, projects } = await getCompanyData(params.id);
+  const { company, contactHistory, projects, businessTypes } =
+    await getCompanyData(params.id);
 
   return (
     <CompanyDetails
       company={company}
       contactHistory={contactHistory}
       projects={projects}
+      businessTypes={businessTypes}
     />
   );
 }
