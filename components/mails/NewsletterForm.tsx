@@ -9,6 +9,16 @@ import { MailContent } from "@/app/mails/page";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { BusinessType, Company } from "@/types/company";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface NewsletterFormProps {
   mailId: string;
@@ -27,6 +37,7 @@ export function NewsletterForm({
     Pick<Company, "id" | "contact" | "name">[]
   >([]);
   const { toast } = useToast();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     fetchBusinessTypes();
@@ -91,7 +102,10 @@ export function NewsletterForm({
       });
       return;
     }
+    setShowConfirmDialog(true);
+  };
 
+  const handleConfirmedSubmit = async () => {
     const result = await sendNewsletter({
       mailId,
       targetCompanies,
@@ -111,6 +125,7 @@ export function NewsletterForm({
         variant: "destructive",
       });
     }
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -148,12 +163,32 @@ export function NewsletterForm({
           <p className="text-sm text-muted-foreground">
             選択中の企業数: {targetCompanies.length}
           </p>
+          <Button
+            onClick={handleSubmit}
+            disabled={targetCompanies.length === 0}
+          >
+            送信する
+          </Button>
         </div>
       )}
 
-      <Button onClick={handleSubmit} disabled={targetCompanies.length === 0}>
-        送信する
-      </Button>
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>メール送信の確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              選択された{targetCompanies.length}社にメールを送信します。
+              よろしいですか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedSubmit}>
+              送信する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
