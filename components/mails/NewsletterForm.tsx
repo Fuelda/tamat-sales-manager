@@ -45,7 +45,7 @@ export function NewsletterForm({
     fetchBusinessTypes();
   }, []);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit() {
     setSending(true);
     try {
       const result = await sendNewsletter({

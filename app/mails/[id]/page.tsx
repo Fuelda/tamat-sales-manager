@@ -46,12 +46,20 @@ export default async function NewsletterDetail({
     .from("sent_mails")
     .select("*")
     .eq("mail_id", params.id)
-    .order("sent_at", { ascending: false })
-    .limit(1);
+    .single();
 
-  const isSent = sentMail && sentMail.length > 0;
-  const sentDate = isSent
-    ? new Date(sentMail[0].sent_at).toLocaleString("ja-JP", {
+  type SentMailCompanies = {
+    companies: { id: string; name: string };
+  };
+
+  const { data: sentMailCompanies } = (await supabase
+    .from("sent_mail_companies")
+    .select("companies:company_id (id, name)")
+    .eq("sent_mail_id", params.id)) as { data: SentMailCompanies[] };
+  console.log(sentMailCompanies);
+
+  const sentDate = sentMail
+    ? new Date(sentMail.sent_at).toLocaleString("ja-JP", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -71,12 +79,12 @@ export default async function NewsletterDetail({
         </Link>
       </div>
 
-      <Card className={cn("mb-8", isSent && "border-l-4 border-l-green-500")}>
+      <Card className={cn("mb-8", sentMail && "border-l-4 border-l-green-500")}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <CardTitle>Send Newsletter</CardTitle>
-              {isSent ? (
+              {sentMail ? (
                 <div className="flex flex-col">
                   <div className="flex items-center text-green-600 text-sm font-medium">
                     <CheckCircle className="h-4 w-4 mr-1" />
@@ -96,11 +104,30 @@ export default async function NewsletterDetail({
           </div>
         </CardHeader>
         <CardContent>
-          <NewsletterForm
-            mailId={mail.id}
-            title={mail.title}
-            contents={mail.contents}
-          />
+          {sentMail ? (
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground font-medium mb-2">
+                送信先企業一覧:
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                {sentMailCompanies?.map((sentMailCompany) => (
+                  <Link
+                    key={sentMailCompany.companies.id}
+                    href={`/companies/${sentMailCompany.companies.id}`}
+                    className="px-3 py-2 rounded-md bg-muted text-sm"
+                  >
+                    {sentMailCompany.companies.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <NewsletterForm
+              mailId={mail.id}
+              title={mail.title}
+              contents={mail.contents}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -108,15 +135,6 @@ export default async function NewsletterDetail({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{mail.title}</CardTitle>
-            {isSent && (
-              <div className="flex flex-col items-end">
-                <div className="flex items-center text-green-600 text-sm font-medium">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  送信済み
-                </div>
-                <div className="text-sm text-muted-foreground">{sentDate}</div>
-              </div>
-            )}
           </div>
           <p className="text-sm text-muted-foreground">
             作成日: {new Date(mail.publishedAt).toLocaleDateString()}
