@@ -5,40 +5,24 @@ import { MailContent } from "@/app/mails/page";
 import { resend } from "@/lib/resend";
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { Company } from "@/types/company";
 
 interface SendNewsletterParams {
   mailId: string;
-  categoryIds: number[];
+  targetCompanies: Pick<Company, "id" | "contact" | "name">[];
   title: string;
   contents: MailContent[];
 }
 
 export async function sendNewsletter({
   mailId,
-  categoryIds,
+  targetCompanies,
   title,
   contents,
 }: SendNewsletterParams) {
   try {
-    // 選択されたカテゴリーに属する企業を取得
-    const { data: targetCompanies, error: fetchError } = await supabase
-      .from("companies")
-      .select("id, name, contact, communication_channel")
-      .in("business_type_id", categoryIds);
-
-    if (fetchError) throw fetchError;
-
-    const targetMailCompanies = targetCompanies.filter(
-      (company) => company.communication_channel === "mail"
-    );
-    const targetCompaniesMail = targetMailCompanies.map(
-      (company) => company.contact
-    );
-
-    console.log(targetMailCompanies)
-
     // 各企業ごとにメールを送信
-    for (const company of targetMailCompanies) {
+    for (const company of targetCompanies) {
       const { error: sendError } = await resend.emails.send({
         from: "masuda@tamat.jp",
         to: [company.contact], 
@@ -59,7 +43,7 @@ export async function sendNewsletter({
     });
     if (insertError) throw insertError;
 
-    const companyRecords = targetMailCompanies.map((company) => ({
+    const companyRecords = targetCompanies.map((company) => ({
       company_id: company.id,
       sent_mail_id: mailId,
     }));

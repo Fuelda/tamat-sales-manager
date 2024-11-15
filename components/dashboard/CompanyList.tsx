@@ -10,6 +10,7 @@ import { CompanyChart, ContactChart, ProjectChart } from "./DashboardCharts";
 import { Company } from "@/types/company";
 import { Contact } from "@/types/contact";
 import { Project } from "@/types/project";
+import NumberTicker from "../ui/number-ticker";
 
 type CompanyListProps = {
   companiesWithoutRecentContact: (Pick<
@@ -92,7 +93,9 @@ export function CompanyList({
             <CardTitle>会社</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold mb-4">{companies?.length}</p>
+            <p className="text-4xl font-bold mb-4">
+              <NumberTicker value={companies?.length ?? 0} />
+            </p>
             <Button asChild>
               <Link href="/companies">一覧を見る</Link>
             </Button>
@@ -109,7 +112,9 @@ export function CompanyList({
             <CardTitle>コンタクト</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold mb-4">{contacts.length}</p>
+            <p className="text-4xl font-bold mb-4">
+              <NumberTicker value={contacts.length} />
+            </p>
             <ul className="list-none mb-4">
               {contacts.slice(0, 5).map((contact) => (
                 <li key={contact.id} className="mb-2">
@@ -129,9 +134,9 @@ export function CompanyList({
             <Button asChild>
               <Link href="/contacts">一覧を見る</Link>
             </Button>
-            <div className="mt-12">
+            {/* <div className="mt-12">
               <ContactChart contacts={contacts} />
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 

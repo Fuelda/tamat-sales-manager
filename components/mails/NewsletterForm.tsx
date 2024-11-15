@@ -1,17 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
 import { useState, useEffect } from "react";
-import { sendNewsletter } from "../../app/mails/[id]/actions/newsletter";
-import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { sendNewsletter } from "@/app/mails/[id]/actions/newsletter";
 import { MailContent } from "@/app/mails/page";
-
-interface BusinessType {
-  id: number;
-  name: string;
-}
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { BusinessType, Company } from "@/types/company";
 
 interface NewsletterFormProps {
   mailId: string;
@@ -24,81 +21,139 @@ export function NewsletterForm({
   title,
   contents,
 }: NewsletterFormProps) {
-  const [sending, setSending] = useState(false);
-  const [categories, setCategories] = useState<BusinessType[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
+  const [targetCompanies, setTargetCompanies] = useState<
+    Pick<Company, "id" | "contact" | "name">[]
+  >([]);
+  const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchBusinessTypes() {
-      const { data, error } = await supabase
-        .from("business_types")
-        .select("id, name");
-
-      if (error) {
-        console.error("Error fetching business types:", error);
-        return;
-      }
-
-      setCategories(data);
-    }
-
     fetchBusinessTypes();
   }, []);
 
-  async function handleSubmit() {
-    setSending(true);
-    try {
-      const result = await sendNewsletter({
-        mailId,
-        categoryIds: selectedCategories,
-        title,
-        contents,
-      });
-      if (!result.success) {
-        throw new Error("Failed to send newsletter");
-      }
-      // 成功メッセージの表示などの処理
-    } catch (error) {
-      console.error(error);
-      // エラーメッセージの表示などの処理
-    } finally {
-      setSending(false);
+  useEffect(() => {
+    if (selectedTypes.length > 0) {
+      fetchTargetCompanies();
+    } else {
+      setTargetCompanies([]);
     }
-  }
+  }, [selectedTypes]);
+
+  const fetchBusinessTypes = async () => {
+    const { data, error } = await supabase
+      .from("business_types")
+      .select("id, name")
+      .order("name");
+
+    if (error) {
+      console.error("Error fetching business types:", error);
+      return;
+    }
+
+    setBusinessTypes(data);
+  };
+
+  const fetchTargetCompanies = async () => {
+    const { data, error } = await supabase
+      .from("companies")
+      .select("id, contact, name")
+      .in("business_type_id", selectedTypes)
+      .eq("communication_channel", "mail");
+
+    if (error) {
+      console.error("Error fetching target companies:", error);
+      return;
+    }
+    setTargetCompanies(data);
+  };
+
+  const handleTypeChange = (typeId: number) => {
+    setSelectedTypes((prev) =>
+      prev.includes(typeId)
+        ? prev.filter((id) => id !== typeId)
+        : [...prev, typeId]
+    );
+  };
+
+  const handleRemoveCompany = (companyId: string) => {
+    setTargetCompanies((prev) =>
+      prev.filter((company) => company.id !== companyId)
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (targetCompanies.length === 0) {
+      toast({
+        title: "エラー",
+        description: "送信先企業が選択されていません",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await sendNewsletter({
+      mailId,
+      targetCompanies,
+      title,
+      contents,
+    });
+
+    if (result.success) {
+      toast({
+        title: "送信成功",
+        description: "ニュースレターが正常に送信されました",
+      });
+    } else {
+      toast({
+        title: "送信エラー",
+        description: "ニュースレターの送信に失敗しました",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">対象カテゴリー</label>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category.id} className="flex items-center space-x-2">
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">カテゴリーを選択</h3>
+        <div className="flex flex-wrap gap-6">
+          {businessTypes.map((type) => (
+            <div key={type.id} className="flex items-center space-x-2">
               <Checkbox
-                id={`category-${category.id}`}
-                checked={selectedCategories.includes(category.id)}
-                onCheckedChange={(checked) => {
-                  setSelectedCategories((prev) =>
-                    checked
-                      ? [...prev, category.id]
-                      : prev.filter((id) => id !== category.id)
-                  );
-                }}
+                id={`type-${type.id}`}
+                checked={selectedTypes.includes(type.id)}
+                onCheckedChange={() => handleTypeChange(type.id)}
               />
-              <label
-                htmlFor={`category-${category.id}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {category.name}
-              </label>
+              <Label htmlFor={`type-${type.id}`}>{type.name}</Label>
             </div>
           ))}
         </div>
       </div>
 
-      <Button disabled={sending} className="w-full gap-2">
-        <Send className="h-4 w-4" />
-        {sending ? "Sending..." : "Send Newsletter"}
+      {targetCompanies.length > 0 && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {targetCompanies.map((company) => (
+              <Button
+                key={company.id}
+                variant="outline"
+                className="justify-between"
+                onClick={() => handleRemoveCompany(company.id)}
+              >
+                {company.name} ✕
+              </Button>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            選択中の企業数: {targetCompanies.length}
+          </p>
+        </div>
+      )}
+
+      <Button onClick={handleSubmit} disabled={targetCompanies.length === 0}>
+        送信する
       </Button>
-    </form>
+    </div>
   );
 }
