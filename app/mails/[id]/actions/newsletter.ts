@@ -35,15 +35,22 @@ export async function sendNewsletter({
       (company) => company.contact
     );
 
-    console.log(targetCompaniesMail);
+    console.log(targetMailCompanies)
 
-    const { error: sendError } = await resend.emails.send({
-      from: "masuda@tamat.jp",
-      to: targetCompaniesMail,
-      subject: title,
-      react: EmailTemplate({ contents: contents }),
-    });
-    if (sendError) throw sendError;
+    // 各企業ごとにメールを送信
+    for (const company of targetMailCompanies) {
+      const { error: sendError } = await resend.emails.send({
+        from: "masuda@tamat.jp",
+        to: [company.contact], 
+        subject: title,
+        react: EmailTemplate({ contents: contents, recipientName: company.name }),
+      });
+      if (sendError) {
+        console.error(`Failed to send email to ${company.name}:`, sendError);
+        // エラーが発生しても続行
+        continue;
+      }
+    }
 
     // Supabaseに送信記録を保存
     const { error: insertError } = await supabase.from("sent_mails").insert({

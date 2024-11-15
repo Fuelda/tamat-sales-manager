@@ -8,7 +8,10 @@ import { Mail } from "../page";
 import { NewsletterForm } from "../../../components/mails/NewsletterForm";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import { ContentRenderer } from "@/components/mails/EmailTemplate";
+import {
+  ContentRenderer,
+  EmailTemplate,
+} from "@/components/mails/EmailTemplate";
 
 // microCMSから特定のメールを取得する関数
 async function getMail(id: string) {
@@ -83,7 +86,7 @@ export default async function NewsletterDetail({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CardTitle>Send Newsletter</CardTitle>
+              <CardTitle>{mail.title}</CardTitle>
               {sentMail ? (
                 <div className="flex flex-col">
                   <div className="flex items-center text-green-600 text-sm font-medium">
@@ -102,6 +105,7 @@ export default async function NewsletterDetail({
               )}
             </div>
           </div>
+          <p className="text-sm text-muted-foreground">{mail.description}</p>
         </CardHeader>
         <CardContent>
           {sentMail ? (
@@ -142,11 +146,7 @@ export default async function NewsletterDetail({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {mail.contents.map((content) => (
-              <div key={content.fieldId}>
-                <ContentRenderer content={content} />
-              </div>
-            ))}
+            <EmailTemplate contents={mail.contents} />
           </div>
         </CardContent>
       </Card>
