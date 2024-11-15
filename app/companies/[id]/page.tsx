@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import CompanyDetails from "./CompanyDetails";
-import { BusinessType } from "../page";
+import { BusinessType } from "@/types/company";
 
 export const dynamic = "force-dynamic";
 

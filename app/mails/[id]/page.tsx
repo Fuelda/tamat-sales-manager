@@ -9,7 +9,6 @@ import { NewsletterForm } from "../../../components/mails/NewsletterForm";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { ContentRenderer } from "@/components/mails/EmailTemplate";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 // microCMSから特定のメールを取得する関数
 async function getMail(id: string) {
@@ -53,12 +52,11 @@ export default async function NewsletterDetail({
     companies: { id: string; name: string };
   };
 
-  const { data: sentMailCompanies } = (await supabase
+  const { data: sentMailCompanies } = await supabase
     .from("sent_mail_companies")
     .select("companies:company_id (id, name)")
-    .eq("sent_mail_id", params.id)) as PostgrestSingleResponse<
-    SentMailCompanies[]
-  >;
+    .eq("sent_mail_id", params.id)
+    .returns<SentMailCompanies[]>();
 
   const sentDate = sentMail
     ? new Date(sentMail.sent_at).toLocaleString("ja-JP", {

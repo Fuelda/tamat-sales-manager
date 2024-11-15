@@ -48,7 +48,7 @@ export async function sendNewsletter({
     // Supabaseに送信記録を保存
     const { error: insertError } = await supabase.from("sent_mails").insert({
       mail_id: mailId,
-      sent_at: new Date(),
+      sent_at: new Date().toISOString(),
     });
     if (insertError) throw insertError;
 

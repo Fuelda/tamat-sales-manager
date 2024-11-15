@@ -13,23 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-
-interface Project {
-  billing_date: string;
-  companies: { id: string; name: string };
-  company_id: string;
-  created_at: Date;
-  id: string;
-  payment_date: string;
-  price: number;
-  status: string;
-  updated_at: Date;
-}
-
-interface Company {
-  id: string;
-  name: string;
-}
+import { Project } from "@/types/project";
+import { Company } from "@/types/company";
 
 const PROJECT_STATUSES = [
   "調整中",
@@ -46,7 +31,7 @@ export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProject, setNewProject] = useState({
     company_id: "",
-    price: "",
+    price: 0,
     billing_date: "",
     payment_date: "",
     status: "",
@@ -72,7 +57,7 @@ export default function Projects() {
       )
       .order("billing_date", { ascending: false });
     if (error) console.error("Error fetching projects:", error);
-    else setProjects(data as Project[]);
+    else setProjects(data);
   }
 
   async function fetchCompanies() {
@@ -90,7 +75,7 @@ export default function Projects() {
       fetchProjects();
       setNewProject({
         company_id: "",
-        price: "",
+        price: 0,
         billing_date: "",
         payment_date: "",
         status: "",
@@ -123,7 +108,7 @@ export default function Projects() {
             placeholder="Price"
             value={newProject.price}
             onChange={(e) =>
-              setNewProject({ ...newProject, price: e.target.value })
+              setNewProject({ ...newProject, price: Number(e.target.value) })
             }
           />
           <Input
@@ -175,7 +160,7 @@ export default function Projects() {
               <TableCell>
                 <Link href={`/companies/${project.company_id}`}>
                   <span className="text-blue-600 hover:underline">
-                    {project.companies.name}
+                    {project.companies?.name}
                   </span>
                 </Link>
               </TableCell>

@@ -27,20 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface Company {
-  id: string;
-  name: string;
-  contact: string;
-  communication_channel: string;
-  business_type_id: string;
-  reach_method: string;
-}
-
-export interface BusinessType {
-  id: string;
-  name: string;
-}
+import { BusinessType, Company } from "@/types/company";
 
 export const dynamic = "force-dynamic";
 
@@ -48,16 +35,18 @@ const CompaniesPage = () => {
   const [companies, setCompanies] = useState<
     (Company & { last_contact_date: string | null })[]
   >([]);
-  const [newCompany, setNewCompany] = useState<Omit<Company, "id">>({
+  const [newCompany, setNewCompany] = useState<
+    Omit<Company, "id" | "created_at" | "updated_at">
+  >({
     name: "",
     contact: "",
     communication_channel: "",
-    business_type_id: "",
+    business_type_id: null,
     reach_method: "",
   });
-  const [communicationChannels, setCommunicationChannels] = useState<string[]>(
-    []
-  );
+  const [communicationChannels, setCommunicationChannels] = useState<
+    (string | null)[]
+  >([]);
   const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [reachMethods, setReachMethods] = useState<string[]>([]);
   const [newChannel, setNewChannel] = useState("");
@@ -185,7 +174,7 @@ const CompaniesPage = () => {
         name: "",
         contact: "",
         communication_channel: "",
-        business_type_id: "",
+        business_type_id: null,
         reach_method: "",
       });
     }
@@ -214,12 +203,13 @@ const CompaniesPage = () => {
     const { data, error } = await supabase
       .from("business_types")
       .insert({ name: newBusinessType.trim() })
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error("新しい業種の追加中にエラーが発生しました:", error);
     } else {
-      setBusinessTypes([...businessTypes, data[0].name]);
+      setBusinessTypes([...businessTypes, { id: data.id, name: data.name }]);
       setNewBusinessType("");
       setIsBusinessTypeDialogOpen(false);
     }
@@ -304,11 +294,14 @@ const CompaniesPage = () => {
                 <SelectValue placeholder="コミュニケーションチャンネル" />
               </SelectTrigger>
               <SelectContent>
-                {communicationChannels.map((channel) => (
-                  <SelectItem key={channel} value={channel}>
-                    {channel}
-                  </SelectItem>
-                ))}
+                {communicationChannels.map(
+                  (channel) =>
+                    channel && (
+                      <SelectItem key={channel} value={channel}>
+                        {channel}
+                      </SelectItem>
+                    )
+                )}
               </SelectContent>
             </Select>
             <Dialog
@@ -335,9 +328,12 @@ const CompaniesPage = () => {
           </div>
           <div className="flex gap-2">
             <Select
-              value={newCompany.business_type_id}
+              value={newCompany.business_type_id?.toString() ?? ""}
               onValueChange={(value) =>
-                setNewCompany({ ...newCompany, business_type_id: value })
+                setNewCompany({
+                  ...newCompany,
+                  business_type_id: Number(value),
+                })
               }
             >
               <SelectTrigger className="flex-grow">
@@ -345,7 +341,7 @@ const CompaniesPage = () => {
               </SelectTrigger>
               <SelectContent>
                 {businessTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id}>
+                  <SelectItem key={type.id} value={type.id.toString()}>
                     {type.name}
                   </SelectItem>
                 ))}
@@ -516,19 +512,22 @@ const CompaniesPage = () => {
                   <SelectValue placeholder="コミュニケーションチャンネル" />
                 </SelectTrigger>
                 <SelectContent>
-                  {communicationChannels.map((channel) => (
-                    <SelectItem key={channel} value={channel}>
-                      {channel}
-                    </SelectItem>
-                  ))}
+                  {communicationChannels.map(
+                    (channel) =>
+                      channel && (
+                        <SelectItem key={channel} value={channel}>
+                          {channel}
+                        </SelectItem>
+                      )
+                  )}
                 </SelectContent>
               </Select>
               <Select
-                value={editingCompany?.business_type_id || ""}
+                value={editingCompany?.business_type_id?.toString() || ""}
                 onValueChange={(value) =>
                   setEditingCompany(
                     editingCompany
-                      ? { ...editingCompany, business_type_id: value }
+                      ? { ...editingCompany, business_type_id: Number(value) }
                       : null
                   )
                 }
@@ -538,7 +537,7 @@ const CompaniesPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {businessTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
+                    <SelectItem key={type.id} value={type.id.toString()}>
                       {type.name}
                     </SelectItem>
                   ))}

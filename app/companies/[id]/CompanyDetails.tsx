@@ -14,45 +14,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BusinessType } from "../page";
 import { supabase } from "@/lib/supabase";
 import ContactModal from "./ContactModal";
-
-interface Company {
-  id: string;
-  name: string;
-  contact: string;
-  communication_channel: string;
-  business_type_id: string;
-  reach_method: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ContactHistory {
-  id: string;
-  company_id: string;
-  content: string;
-  status: string;
-  contact_date: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Project {
-  id: string;
-  company_id: string;
-  price: number;
-  billing_date: string;
-  payment_date: string;
-  created_at: string;
-  updated_at: string;
-}
+import { BusinessType, Company } from "@/types/company";
+import { Contact } from "@/types/contact";
+import { Project } from "@/types/project";
 
 interface CompanyDetailsProps {
   company: Company;
-  contactHistory: ContactHistory[];
-  projects: Project[];
+  contactHistory: Omit<Contact, "companies">[];
+  projects: Omit<Project, "companies">[];
   businessTypes: BusinessType[];
 }
 
@@ -118,14 +89,18 @@ export default function CompanyDetails({
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">登録情報</h3>
-              <p>
-                <strong>作成日時:</strong>{" "}
-                {new Date(company.created_at).toLocaleString()}
-              </p>
-              <p>
-                <strong>更新日時:</strong>{" "}
-                {new Date(company.updated_at).toLocaleString()}
-              </p>
+              {company.created_at && (
+                <p>
+                  <strong>作成日時:</strong>{" "}
+                  {new Date(company.created_at).toLocaleString()}
+                </p>
+              )}
+              {company.updated_at && (
+                <p>
+                  <strong>更新日時:</strong>{" "}
+                  {new Date(company.updated_at).toLocaleString()}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -182,10 +157,12 @@ export default function CompanyDetails({
                     <strong>請求日:</strong>{" "}
                     {new Date(project.billing_date).toLocaleDateString()}
                   </p>
-                  <p>
-                    <strong>支払日:</strong>{" "}
-                    {new Date(project.payment_date).toLocaleDateString()}
-                  </p>
+                  {project.payment_date && (
+                    <p>
+                      <strong>支払日:</strong>{" "}
+                      {new Date(project.payment_date).toLocaleDateString()}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}

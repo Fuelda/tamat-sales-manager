@@ -7,22 +7,20 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { CompanyChart, ContactChart, ProjectChart } from "./DashboardCharts";
-
-type Company = {
-  id: string;
-  name: string;
-  business_type?: string;
-  latestContact?: {
-    contact_date: string;
-    content: string;
-  };
-};
+import { Company } from "@/types/company";
+import { Contact } from "@/types/contact";
+import { Project } from "@/types/project";
 
 type CompanyListProps = {
-  companiesWithoutRecentContact: Company[];
-  companies: Company[];
-  contacts: any[];
-  projects: any[];
+  companiesWithoutRecentContact: (Pick<
+    Company,
+    "id" | "name" | "business_type_id"
+  > & {
+    latestContact?: Pick<Contact, "contact_date" | "content">;
+  })[];
+  companies: Company[] | null;
+  contacts: Contact[];
+  projects: Project[];
 };
 
 export function CompanyList({
@@ -94,27 +92,14 @@ export function CompanyList({
             <CardTitle>会社</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold mb-4">{companies.length}</p>
-            <ul className="list-none mb-4">
-              {companies.slice(0, 5).map((company) => (
-                <li key={company.id} className="mb-2">
-                  <Link
-                    href={`/companies/${company.id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {company.name}
-                  </Link>
-                  <span className="text-sm text-gray-500 ml-2">
-                    {company.business_type}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-4xl font-bold mb-4">{companies?.length}</p>
             <Button asChild>
-              <Link href="/companies">詳細を見る</Link>
+              <Link href="/companies">一覧を見る</Link>
             </Button>
-            <div className="mt-4">
-              <CompanyChart companies={companies} contacts={contacts} />
+            <div className="mt-12">
+              {companies && (
+                <CompanyChart companies={companies} contacts={contacts} />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -142,9 +127,9 @@ export function CompanyList({
               ))}
             </ul>
             <Button asChild>
-              <Link href="/contacts">詳細を見る</Link>
+              <Link href="/contacts">一覧を見る</Link>
             </Button>
-            <div className="mt-4">
+            <div className="mt-12">
               <ContactChart contacts={contacts} />
             </div>
           </CardContent>
@@ -173,9 +158,9 @@ export function CompanyList({
               ))}
             </ul>
             <Button asChild>
-              <Link href="/projects">詳細を見る</Link>
+              <Link href="/projects">一覧を見る</Link>
             </Button>
-            <div className="mt-4">
+            <div className="mt-12">
               <ProjectChart projects={projects} />
             </div>
           </CardContent>
