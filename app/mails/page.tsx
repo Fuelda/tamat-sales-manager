@@ -23,6 +23,8 @@ export type MailContent = {
   contents: string;
 };
 
+export const dynamic = "force-dynamic";
+
 // microCMSのSDKを使用してデータを取得する関数
 async function getMails() {
   const data = await client.getList<Mail>({
