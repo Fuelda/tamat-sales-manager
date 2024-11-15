@@ -23,7 +23,7 @@ export async function sendNewsletter({
     // 選択されたカテゴリーに属する企業を取得
     const { data: targetCompanies, error: fetchError } = await supabase
       .from("companies")
-      .select("name, contact, communication_channel")
+      .select("id, name, contact, communication_channel")
       .in("business_type_id", categoryIds);
 
     if (fetchError) throw fetchError;
@@ -37,21 +37,30 @@ export async function sendNewsletter({
 
     console.log(targetCompaniesMail);
 
-    // const { data: sentData, error: sendError } = await resend.emails.send({
-    //   from: "masuda@tamat.jp",
-    //   to: targetCompaniesMail,
-    //   subject: title,
-    //   react: EmailTemplate({ contents: contents }),
-    // });
-    // if (sendError) throw sendError;
+    const { error: sendError } = await resend.emails.send({
+      from: "masuda@tamat.jp",
+      to: targetCompaniesMail,
+      subject: title,
+      react: EmailTemplate({ contents: contents }),
+    });
+    if (sendError) throw sendError;
 
-    // // Supabaseに送信記録を保存
-    // const { error: insertError } = await supabase
-    //   .from("sent_newsletters")
-    //   .insert({
-    //     mail_id: mailId,
-    //   });
-    // if (insertError) throw insertError;
+    // Supabaseに送信記録を保存
+    const { error: insertError } = await supabase.from("sent_mails").insert({
+      mail_id: mailId,
+      sent_at: new Date(),
+    });
+    if (insertError) throw insertError;
+
+    const companyRecords = targetMailCompanies.map((company) => ({
+      company_id: company.id,
+      sent_mail_id: mailId,
+    }));
+
+    const { error: companiesInsertError } = await supabase
+      .from("sent_mail_companies")
+      .insert(companyRecords);
+    if (companiesInsertError) throw companiesInsertError;
 
     // キャッシュの再検証
     revalidatePath("/mails", "layout");

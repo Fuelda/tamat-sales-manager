@@ -43,7 +43,7 @@ export default async function NewsletterDetail({
   const mail = await getMail(params.id);
 
   const { data: sentMail } = await supabase
-    .from("sent_newsletters")
+    .from("sent_mails")
     .select("*")
     .eq("mail_id", params.id)
     .order("sent_at", { ascending: false })

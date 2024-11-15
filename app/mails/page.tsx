@@ -36,7 +36,7 @@ async function getMails() {
 // 送信済みメールのIDを取得する関数を追加
 async function getSentMailIds() {
   const { data: sentMails } = await supabase
-    .from("sent_newsletters")
+    .from("sent_mails")
     .select("mail_id");
 
   return new Set(sentMails?.map((mail) => mail.mail_id) || []);
