@@ -77,6 +77,7 @@ export type Database = {
           contact: string
           created_at: string | null
           id: string
+          lead_status_id: string | null
           name: string
           reach_method: string
           updated_at: string | null
@@ -87,6 +88,7 @@ export type Database = {
           contact: string
           created_at?: string | null
           id?: string
+          lead_status_id?: string | null
           name: string
           reach_method: string
           updated_at?: string | null
@@ -97,11 +99,27 @@ export type Database = {
           contact?: string
           created_at?: string | null
           id?: string
+          lead_status_id?: string | null
           name?: string
           reach_method?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_business_type_id_fkey"
+            columns: ["business_type_id"]
+            isOneToOne: false
+            referencedRelation: "business_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_lead_status_id_fkey"
+            columns: ["lead_status_id"]
+            isOneToOne: false
+            referencedRelation: "lead_status"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_history: {
         Row: {
@@ -140,6 +158,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_status: {
+        Row: {
+          created_at: string
+          id: string
+          index: number
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          index: number
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          index?: number
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       projects: {
         Row: {

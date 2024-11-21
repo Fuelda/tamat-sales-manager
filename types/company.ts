@@ -7,8 +7,8 @@ export type Company = {
   created_at: string|null;
   updated_at: string|null;
   business_type_id: number|null;
+  lead_status_id: string|null;
 };
-
 
 export type BusinessType = {
   id: number;

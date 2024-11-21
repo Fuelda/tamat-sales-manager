@@ -43,19 +43,25 @@ const CompaniesPage = () => {
     communication_channel: "",
     business_type_id: null,
     reach_method: "",
+    lead_status_id: null,
   });
   const [communicationChannels, setCommunicationChannels] = useState<
     (string | null)[]
   >([]);
   const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [reachMethods, setReachMethods] = useState<string[]>([]);
+  const [leadStatusList, setLeadStatusList] = useState<
+    { id: string; label: string }[]
+  >([]);
   const [newChannel, setNewChannel] = useState("");
   const [newBusinessType, setNewBusinessType] = useState("");
   const [newReachMethod, setNewReachMethod] = useState("");
+  const [newLeadStatus, setNewLeadStatus] = useState("");
   const [isChannelDialogOpen, setIsChannelDialogOpen] = useState(false);
   const [isBusinessTypeDialogOpen, setIsBusinessTypeDialogOpen] =
     useState(false);
   const [isReachMethodDialogOpen, setIsReachMethodDialogOpen] = useState(false);
+  const [isLeadStatusDialogOpen, setIsLeadStatusDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -64,12 +70,13 @@ const CompaniesPage = () => {
     fetchCommunicationChannels();
     fetchBusinessTypes();
     fetchReachMethods();
+    fetchLeadStatuses();
   }, []);
 
   const fetchCompanies = async () => {
     const { data: companiesData, error: companiesError } = await supabase
       .from("companies")
-      .select("*");
+      .select("*, lead_status(*)");
 
     if (companiesError) {
       console.error(
@@ -160,11 +167,25 @@ const CompaniesPage = () => {
     }
   };
 
+  const fetchLeadStatuses = async () => {
+    const { data, error } = await supabase
+      .from("lead_status")
+      .select("*")
+      .order("index");
+
+    if (error) {
+      console.error("リード状況の取得中にエラーが発生しました:", error);
+    } else {
+      setLeadStatusList(data);
+    }
+  };
+
   const addCompany = async () => {
     const { data, error } = await supabase.from("companies").insert([
       {
         ...newCompany,
         business_type_id: newCompany.business_type_id,
+        lead_status_id: newCompany.lead_status_id,
       },
     ]);
     if (error) console.error("会社の追加中にエラーが発生しました:", error);
@@ -176,6 +197,7 @@ const CompaniesPage = () => {
         communication_channel: "",
         business_type_id: null,
         reach_method: "",
+        lead_status_id: null,
       });
     }
   };
@@ -235,6 +257,26 @@ const CompaniesPage = () => {
     }
   };
 
+  const addNewLeadStatus = async () => {
+    if (newLeadStatus.trim() === "") return;
+
+    const { data, error } = await supabase
+      .from("lead_status")
+      .insert({
+        label: newLeadStatus.trim(),
+        index: leadStatusList.length,
+      })
+      .select();
+
+    if (error) {
+      console.error("新しいリード状況の追加中にエラーが発生しました:", error);
+    } else {
+      setLeadStatusList([...leadStatusList, data[0]]);
+      setNewLeadStatus("");
+      setIsLeadStatusDialogOpen(false);
+    }
+  };
+
   const handleEdit = (company: Company) => {
     setEditingCompany(company);
     setIsEditDialogOpen(true);
@@ -251,6 +293,7 @@ const CompaniesPage = () => {
         communication_channel: editingCompany.communication_channel,
         business_type_id: editingCompany.business_type_id,
         reach_method: editingCompany.reach_method,
+        lead_status_id: editingCompany.lead_status_id,
       })
       .eq("id", editingCompany.id);
 
@@ -409,6 +452,46 @@ const CompaniesPage = () => {
               </DialogContent>
             </Dialog>
           </div>
+          <div className="flex gap-2">
+            <Select
+              value={newCompany.lead_status_id ?? ""}
+              onValueChange={(value) =>
+                setNewCompany({ ...newCompany, lead_status_id: value })
+              }
+            >
+              <SelectTrigger className="flex-grow">
+                <SelectValue placeholder="リード状況" />
+              </SelectTrigger>
+              <SelectContent>
+                {leadStatusList.map((status) => (
+                  <SelectItem key={status.id} value={status.id}>
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Dialog
+              open={isLeadStatusDialogOpen}
+              onOpenChange={setIsLeadStatusDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">新規追加</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>新しいリード状況を追加</DialogTitle>
+                </DialogHeader>
+                <div className="flex gap-2 mt-4">
+                  <Input
+                    placeholder="新しいリード状況"
+                    value={newLeadStatus}
+                    onChange={(e) => setNewLeadStatus(e.target.value)}
+                  />
+                  <Button onClick={addNewLeadStatus}>追加</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           <Button onClick={addCompany}>会社を追加</Button>
         </div>
       </div>
@@ -420,6 +503,7 @@ const CompaniesPage = () => {
             <TableHead>コミュニケーションチャンネル</TableHead>
             <TableHead>業種</TableHead>
             <TableHead>アプローチ方法</TableHead>
+            <TableHead>リード状況</TableHead>
             <TableHead>最終コンタクト日</TableHead>
             <TableHead>アクション</TableHead>
           </TableRow>
@@ -447,6 +531,11 @@ const CompaniesPage = () => {
                 )?.name || "-"}
               </TableCell>
               <TableCell>{company.reach_method}</TableCell>
+              <TableCell>
+                {leadStatusList.find(
+                  (status) => status.id === company.lead_status_id
+                )?.label || "-"}
+              </TableCell>
               <TableCell>
                 {company.last_contact_date
                   ? new Date(company.last_contact_date).toLocaleDateString(
@@ -560,6 +649,27 @@ const CompaniesPage = () => {
                   {reachMethods.map((method) => (
                     <SelectItem key={method} value={method}>
                       {method}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={editingCompany?.lead_status_id || ""}
+                onValueChange={(value) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, lead_status_id: value }
+                      : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="リード状況" />
+                </SelectTrigger>
+                <SelectContent>
+                  {leadStatusList.map((status) => (
+                    <SelectItem key={status.id} value={status.id}>
+                      {status.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
