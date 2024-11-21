@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BusinessType, Company } from "@/types/company";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,9 @@ const CompaniesPage = () => {
   const [isLeadStatusDialogOpen, setIsLeadStatusDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedLeadStatuses, setSelectedLeadStatuses] = useState<string[]>(
+    []
+  );
 
   useEffect(() => {
     fetchCompanies();
@@ -72,6 +76,17 @@ const CompaniesPage = () => {
     fetchReachMethods();
     fetchLeadStatuses();
   }, []);
+
+  useEffect(() => {
+    if (leadStatusList.length > 0 && selectedLeadStatuses.length === 0) {
+      const defaultStatus = leadStatusList.find(
+        (status) => status.label === "育成中"
+      );
+      if (defaultStatus) {
+        setSelectedLeadStatuses([defaultStatus.id]);
+      }
+    }
+  }, [leadStatusList]);
 
   const fetchCompanies = async () => {
     const { data: companiesData, error: companiesError } = await supabase
@@ -247,7 +262,7 @@ const CompaniesPage = () => {
 
     if (error) {
       console.error(
-        "新しいアプローチ方法の追加中にエラーが発生しました:",
+        "新しいアプローチ方法の追加中にエラーが発生�����した:",
         error
       );
     } else {
@@ -269,7 +284,7 @@ const CompaniesPage = () => {
       .select();
 
     if (error) {
-      console.error("新しいリード状況の追加中にエラーが発生しました:", error);
+      console.error("新しいリード状況の追加中にエラーが発生しまし:", error);
     } else {
       setLeadStatusList([...leadStatusList, data[0]]);
       setNewLeadStatus("");
@@ -495,6 +510,45 @@ const CompaniesPage = () => {
           <Button onClick={addCompany}>会社を追加</Button>
         </div>
       </div>
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm text-muted-foreground">
+            {
+              companies.filter((company) =>
+                selectedLeadStatuses.length === 0
+                  ? true
+                  : selectedLeadStatuses.includes(company.lead_status_id || "")
+              ).length
+            }{" "}
+            / {companies.length} 件表示
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {leadStatusList.map((status) => (
+            <Button
+              key={status.id}
+              variant={
+                selectedLeadStatuses.includes(status.id) ? "default" : "outline"
+              }
+              onClick={() => {
+                setSelectedLeadStatuses((prev) =>
+                  prev.includes(status.id)
+                    ? prev.filter((id) => id !== status.id)
+                    : [...prev, status.id]
+                );
+              }}
+              className={cn(
+                "transition-colors",
+                selectedLeadStatuses.includes(status.id)
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-primary/10"
+              )}
+            >
+              {status.label}
+            </Button>
+          ))}
+        </div>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -509,52 +563,61 @@ const CompaniesPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companies.map((company) => (
-            <TableRow key={company.id}>
-              <TableCell>{company.name}</TableCell>
-              <TableCell>
-                <a
-                  href={
-                    company.communication_channel === "mail"
-                      ? `mailto:${company.contact}`
-                      : company.contact
-                  }
-                  target="_blank"
-                >
-                  {company.contact}
-                </a>
-              </TableCell>
-              <TableCell>{company.communication_channel}</TableCell>
-              <TableCell>
-                {businessTypes.find(
-                  (type) => type.id === company.business_type_id
-                )?.name || "-"}
-              </TableCell>
-              <TableCell>{company.reach_method}</TableCell>
-              <TableCell>
-                {leadStatusList.find(
-                  (status) => status.id === company.lead_status_id
-                )?.label || "-"}
-              </TableCell>
-              <TableCell>
-                {company.last_contact_date
-                  ? new Date(company.last_contact_date).toLocaleDateString(
-                      "ja-JP"
-                    )
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Link href={`/companies/${company.id}`} passHref>
-                    <Button variant="outline">詳細</Button>
-                  </Link>
-                  <Button variant="outline" onClick={() => handleEdit(company)}>
-                    編集
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {companies
+            .filter((company) =>
+              selectedLeadStatuses.length === 0
+                ? true
+                : selectedLeadStatuses.includes(company.lead_status_id || "")
+            )
+            .map((company) => (
+              <TableRow key={company.id}>
+                <TableCell>{company.name}</TableCell>
+                <TableCell>
+                  <a
+                    href={
+                      company.communication_channel === "mail"
+                        ? `mailto:${company.contact}`
+                        : company.contact
+                    }
+                    target="_blank"
+                  >
+                    {company.contact}
+                  </a>
+                </TableCell>
+                <TableCell>{company.communication_channel}</TableCell>
+                <TableCell>
+                  {businessTypes.find(
+                    (type) => type.id === company.business_type_id
+                  )?.name || "-"}
+                </TableCell>
+                <TableCell>{company.reach_method}</TableCell>
+                <TableCell>
+                  {leadStatusList.find(
+                    (status) => status.id === company.lead_status_id
+                  )?.label || "-"}
+                </TableCell>
+                <TableCell>
+                  {company.last_contact_date
+                    ? new Date(company.last_contact_date).toLocaleDateString(
+                        "ja-JP"
+                      )
+                    : "-"}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Link href={`/companies/${company.id}`} passHref>
+                      <Button variant="outline">詳細</Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEdit(company)}
+                    >
+                      編集
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
 
