@@ -42,6 +42,10 @@ export default async function Dashboard() {
       };
     });
 
+  const { data: channelOptions } = await supabase
+    .from("communication_channels")
+    .select("id, name");
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">ダッシュボード</h1>
@@ -50,6 +54,7 @@ export default async function Dashboard() {
         companies={companies || []}
         contacts={contacts || []}
         projects={projects || []}
+        channelOptions={channelOptions || []}
       />
     </div>
   );

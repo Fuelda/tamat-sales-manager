@@ -7,4 +7,5 @@ export type Contact = {
   created_at: string|null;
   updated_at: string|null;
   companies: { name: string }|null;
+  channel?: string;
 };

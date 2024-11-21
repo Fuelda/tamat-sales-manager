@@ -11,6 +11,7 @@ import { Company } from "@/types/company";
 import { Contact } from "@/types/contact";
 import { Project } from "@/types/project";
 import NumberTicker from "../ui/number-ticker";
+import { CommunicationChannelChart } from "./CommunicationChannelChart";
 
 type CompanyListProps = {
   companiesWithoutRecentContact: (Pick<
@@ -22,6 +23,7 @@ type CompanyListProps = {
   companies: Company[] | null;
   contacts: Contact[];
   projects: Project[];
+  channelOptions: { id: number; name: string | null }[];
 };
 
 export function CompanyList({
@@ -29,6 +31,7 @@ export function CompanyList({
   companies,
   contacts,
   projects,
+  channelOptions,
 }: CompanyListProps) {
   const [isClient, setIsClient] = useState(false);
 
@@ -96,14 +99,23 @@ export function CompanyList({
             <p className="text-4xl font-bold mb-4">
               <NumberTicker value={companies?.length ?? 0} />
             </p>
-            <Button asChild>
-              <Link href="/companies">一覧を見る</Link>
-            </Button>
-            <div className="mt-12">
+
+            {/* <div className="mt-12">
               {companies && (
                 <CompanyChart companies={companies} contacts={contacts} />
               )}
+            </div> */}
+
+            <div className="mb-4">
+              <CommunicationChannelChart
+                companies={companies}
+                channelOptions={channelOptions}
+              />
             </div>
+
+            <Button asChild>
+              <Link href="/companies">一覧を見る</Link>
+            </Button>
           </CardContent>
         </Card>
 
