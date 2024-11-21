@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { sendNewsletter } from "@/app/mails/[id]/actions/newsletter";
+import {
+  sendNewsletter,
+  sendSlackMessage,
+} from "@/app/mails/[id]/actions/newsletter";
 import { MailContent } from "@/app/mails/page";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { slack } from "@/lib/slack";
 
 interface NewsletterFormProps {
   mailId: string;
@@ -128,6 +132,11 @@ export function NewsletterForm({
     setShowConfirmDialog(false);
   };
 
+  const channel = "#tamat-sales-manager";
+  const handleConfirmedSlackSubmit = async () => {
+    sendSlackMessage({ contents, channel, mailId });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -171,6 +180,8 @@ export function NewsletterForm({
           </Button>
         </div>
       )}
+
+      {/* <Button onClick={handleConfirmedSlackSubmit}>slackを送信する</Button> */}
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
