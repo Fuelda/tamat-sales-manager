@@ -4,10 +4,15 @@ import { supabase } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  const { data: companies } = await supabase.from("companies").select("*");
+  const { data: companies } = await supabase
+    .from("companies")
+    .select("*, lead_status(label)");
+
   const { data: contacts } = await supabase
     .from("contact_history")
-    .select("*,companies(name)");
+    .select("*,companies(name)")
+    .order("contact_date", { ascending: false });
+
   const { data: projects } = await supabase
     .from("projects")
     .select("*,companies(name)");
@@ -25,7 +30,9 @@ export default async function Dashboard() {
             new Date(a.contact_date).getTime()
         )[0];
       return (
-        !latestContact || new Date(latestContact.contact_date) < oneMonthAgo
+        (!latestContact ||
+          new Date(latestContact.contact_date) < oneMonthAgo) &&
+        company.lead_status?.label === "育成中"
       );
     })
     .map((company) => {
