@@ -44,7 +44,7 @@ const CompaniesPage = () => {
     communication_channel: "",
     business_type_id: null,
     reach_method: "",
-    lead_status_id: null,
+    lead_status_id: "7f9dbfd7-a80a-4909-a580-d869b2e28502", // "新規"のID
   });
   const [communicationChannels, setCommunicationChannels] = useState<
     (string | null)[]
