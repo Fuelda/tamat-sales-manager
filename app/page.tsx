@@ -47,6 +47,17 @@ export default async function Dashboard() {
         ...company,
         latestContact,
       };
+    })
+    .sort((a, b) => {
+      const aLatestContact = a.latestContact?.contact_date;
+      const bLatestContact = b.latestContact?.contact_date;
+
+      if (!aLatestContact) return 1;
+      if (!bLatestContact) return -1;
+
+      return (
+        new Date(bLatestContact).getTime() - new Date(aLatestContact).getTime()
+      );
     });
 
   const { data: channelOptions } = await supabase
