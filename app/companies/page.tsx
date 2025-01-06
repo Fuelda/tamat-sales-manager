@@ -29,10 +29,25 @@ import {
 } from "@/components/ui/dialog";
 import { BusinessType, Company } from "@/types/company";
 import { cn } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
+const LEAD_STATUS_SLUGS: { [key: string]: string } = {
+  新規: "new",
+  育成中: "nurturing",
+  失注: "lost",
+};
+
+const LEAD_STATUS_LABELS: { [key: string]: string } = {
+  new: "新規",
+  nurturing: "育成中",
+  lost: "失注",
+};
+
 const CompaniesPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [companies, setCompanies] = useState<
     (Company & { last_contact_date: string | null })[]
   >([]);
@@ -66,9 +81,15 @@ const CompaniesPage = () => {
   const [isLeadStatusDialogOpen, setIsLeadStatusDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedLeadStatuses, setSelectedLeadStatuses] = useState<string[]>(
-    []
-  );
+  const selectedStatusSlugs = searchParams.get("status")?.split(",") || [];
+  const selectedLeadStatuses = selectedStatusSlugs
+    .map((slug) => {
+      const label = LEAD_STATUS_LABELS[slug];
+      return label
+        ? leadStatusList.find((status) => status.label === label)?.id
+        : undefined;
+    })
+    .filter((id): id is string => id !== undefined);
 
   useEffect(() => {
     fetchCompanies();
@@ -79,12 +100,14 @@ const CompaniesPage = () => {
   }, []);
 
   useEffect(() => {
-    if (leadStatusList.length > 0 && selectedLeadStatuses.length === 0) {
+    if (leadStatusList.length > 0 && selectedStatusSlugs.length === 0) {
       const defaultStatus = leadStatusList.find(
         (status) => status.label === "育成中"
       );
       if (defaultStatus) {
-        setSelectedLeadStatuses([defaultStatus.id]);
+        const params = new URLSearchParams();
+        params.set("status", "nurturing");
+        router.push(`/companies?${params.toString()}`);
       }
     }
   }, [leadStatusList]);
@@ -325,6 +348,25 @@ const CompaniesPage = () => {
     }
   };
 
+  const handleStatusFilter = (statusId: string) => {
+    const status = leadStatusList.find((s) => s.id === statusId);
+    if (!status) return;
+
+    const slug = LEAD_STATUS_SLUGS[status.label];
+    if (!slug) return;
+
+    const currentSlugs = selectedStatusSlugs;
+    const newSlugs = currentSlugs.includes(slug)
+      ? currentSlugs.filter((s) => s !== slug)
+      : [...currentSlugs, slug];
+
+    const params = new URLSearchParams();
+    if (newSlugs.length > 0) {
+      params.set("status", newSlugs.join(","));
+    }
+    router.push(`/companies?${params.toString()}`);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">会社一覧</h1>
@@ -541,13 +583,7 @@ const CompaniesPage = () => {
               variant={
                 selectedLeadStatuses.includes(status.id) ? "default" : "outline"
               }
-              onClick={() => {
-                setSelectedLeadStatuses((prev) =>
-                  prev.includes(status.id)
-                    ? prev.filter((id) => id !== status.id)
-                    : [...prev, status.id]
-                );
-              }}
+              onClick={() => handleStatusFilter(status.id)}
               className={cn(
                 "transition-colors",
                 selectedLeadStatuses.includes(status.id)
