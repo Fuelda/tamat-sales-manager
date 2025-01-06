@@ -45,6 +45,7 @@ const CompaniesPage = () => {
     business_type_id: null,
     reach_method: "",
     lead_status_id: "7f9dbfd7-a80a-4909-a580-d869b2e28502", // "新規"のID
+    person_in_charge: "",
   });
   const [communicationChannels, setCommunicationChannels] = useState<
     (string | null)[]
@@ -125,6 +126,7 @@ const CompaniesPage = () => {
       return {
         ...company,
         last_contact_date: companyContacts?.[0]?.contact_date || null,
+        person_in_charge: company.person_in_charge || null,
       };
     });
 
@@ -213,6 +215,7 @@ const CompaniesPage = () => {
         business_type_id: null,
         reach_method: "",
         lead_status_id: null,
+        person_in_charge: "",
       });
     }
   };
@@ -262,7 +265,7 @@ const CompaniesPage = () => {
 
     if (error) {
       console.error(
-        "新しいアプローチ方法の追加中にエラーが発生�����した:",
+        "新しいアプローチ方法の追加中にエラーが発生しました:",
         error
       );
     } else {
@@ -284,7 +287,7 @@ const CompaniesPage = () => {
       .select();
 
     if (error) {
-      console.error("新しいリード状況の追加中にエラーが発生しまし:", error);
+      console.error("新しいリード状況の追加中にエラーが発生しました:", error);
     } else {
       setLeadStatusList([...leadStatusList, data[0]]);
       setNewLeadStatus("");
@@ -309,6 +312,7 @@ const CompaniesPage = () => {
         business_type_id: editingCompany.business_type_id,
         reach_method: editingCompany.reach_method,
         lead_status_id: editingCompany.lead_status_id,
+        person_in_charge: editingCompany.person_in_charge,
       })
       .eq("id", editingCompany.id);
 
@@ -339,6 +343,13 @@ const CompaniesPage = () => {
             value={newCompany.contact}
             onChange={(e) =>
               setNewCompany({ ...newCompany, contact: e.target.value })
+            }
+          />
+          <Input
+            placeholder="担当者"
+            value={newCompany.person_in_charge || ""}
+            onChange={(e) =>
+              setNewCompany({ ...newCompany, person_in_charge: e.target.value })
             }
           />
           <div className="flex gap-2">
@@ -554,6 +565,7 @@ const CompaniesPage = () => {
           <TableRow>
             <TableHead>会社名</TableHead>
             <TableHead>連絡先</TableHead>
+            <TableHead>担当者</TableHead>
             <TableHead>コミュニケーションチャンネル</TableHead>
             <TableHead>業種</TableHead>
             <TableHead>アプローチ方法</TableHead>
@@ -584,6 +596,7 @@ const CompaniesPage = () => {
                     {company.contact}
                   </a>
                 </TableCell>
+                <TableCell>{company.person_in_charge || "-"}</TableCell>
                 <TableCell>{company.communication_channel}</TableCell>
                 <TableCell>
                   {businessTypes.find(
@@ -646,6 +659,17 @@ const CompaniesPage = () => {
                   setEditingCompany(
                     editingCompany
                       ? { ...editingCompany, contact: e.target.value }
+                      : null
+                  )
+                }
+              />
+              <Input
+                placeholder="担当者"
+                value={editingCompany?.person_in_charge || ""}
+                onChange={(e) =>
+                  setEditingCompany(
+                    editingCompany
+                      ? { ...editingCompany, person_in_charge: e.target.value }
                       : null
                   )
                 }

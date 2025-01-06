@@ -79,6 +79,7 @@ export type Database = {
           id: string
           lead_status_id: string | null
           name: string
+          person_in_charge: string | null
           reach_method: string
           updated_at: string | null
         }
@@ -90,6 +91,7 @@ export type Database = {
           id?: string
           lead_status_id?: string | null
           name: string
+          person_in_charge?: string | null
           reach_method: string
           updated_at?: string | null
         }
@@ -101,6 +103,7 @@ export type Database = {
           id?: string
           lead_status_id?: string | null
           name?: string
+          person_in_charge?: string | null
           reach_method?: string
           updated_at?: string | null
         }
